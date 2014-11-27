@@ -9,7 +9,7 @@
 
 #include <llvm/IR/CallingConv.h>
 #include <llvm/IR/Constants.h>
-#include <llvm/DebugInfo.h>
+#include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Instructions.h>
 #include <llvm/LinkAllPasses.h>
@@ -18,8 +18,8 @@
 #include <llvm/PassManager.h>
 #include <llvm/IR/Type.h>
 #include <llvm/Analysis/LoopPass.h>
-#include <llvm/Analysis/Verifier.h>
-#include <llvm/Assembly/Parser.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/AsmParser/Parser.h>
 #include <llvm/CodeGen/GCStrategy.h>
 #include <llvm/CodeGen/JITCodeEmitter.h>
 #include <llvm/Config/config.h>

@@ -74,9 +74,13 @@ cd llvm-3.3.src
 patch -p1 < ../vmkit2/patches/llvm.patch
 
 NOTICE:
+* NOTE (LLVM 3.6) I think the following bullet is now incorrect... (though since
+  I'm yet to actually get it to build I'll reserve final judgement until then...)
 * VMKit does not support building LLVM out of source because of a bug
   in "llvm-config", so please build in the source, and keep different source
   trees for different configurations/architectures of builds.
+
+* NOTE (LLVM 3.6), need `cmake -DLLVM_ENABLE_RTTI=1` for the world to not end.
 
 * Make it (release mode):
 

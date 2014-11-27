@@ -32,19 +32,19 @@ else
   PRECOMPILER_OPT+=-disable-opt
 endif
 
-LLC_FLAGS+=-disable-cfi -disable-fp-elim -relocation-model=pic 
-OPT_FLAGS+=-disable-cfi -disable-fp-elim 
+LLC_FLAGS+=-disable-fp-elim -relocation-model=pic
+OPT_FLAGS+=-disable-fp-elim
 
 INCLUDES+=-I$(PROJ_SRC_CWD) -I$(PROJ_SRC_ROOT)/include -I$(PROJ_SRC_ROOT)/lib/vmkit/MMTk -I$(BUILD_DIR) \
 					-I$(shell $(LLVM_CONFIG) --includedir) -I$(shell $(LLVM_CONFIG) --obj-root)/include -I$(shell $(LLVM_CONFIG) --src-root)
 
 WARN_CFLAGS=  -Wall -Wno-long-long -Wno-variadic-macros -Wno-unused-private-field -Wno-unused-variable
-COMMON_CFLAGS+= $(INCLUDES) -ansi -pedantic $(WARN_CFLAGS) -fPIC \
+COMMON_CFLAGS+= $(INCLUDES) -pedantic $(WARN_CFLAGS) -fPIC \
 								-D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
 								-fno-strict-aliasing -fno-omit-frame-pointer -fvisibility-inlines-hidden 
 
 CFLAGS+=$(COMMON_CFLAGS)
-CXXFLAGS+=$(COMMON_CFLAGS) -Woverloaded-virtual -Wcast-qual -fno-exceptions $(LLVM_RTTI)
+CXXFLAGS+=$(COMMON_CFLAGS) -Woverloaded-virtual -Wcast-qual -fno-exceptions $(LLVM_RTTI) -std=c++11
 LDFLAGS+=$(COMMON_CFLAGS) $(shell $(LLVM_CONFIG) --ldflags) $(LDOPT)
 SHOPT+=$(COMMON_CFLAGS)
 LIBS+=$(shell $(LLVM_CONFIG) --libs) -lz

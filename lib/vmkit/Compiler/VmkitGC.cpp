@@ -15,6 +15,7 @@
 #include "llvm/MC/MCContext.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Target/TargetInstrInfo.h"
+#include "llvm/Target/TargetSubtargetInfo.h"
 
 #include "vmkit/JIT.h"
 
@@ -42,7 +43,7 @@ VmkitGC::VmkitGC() {
 static MCSymbol *InsertLabel(MachineBasicBlock &MBB, 
                              MachineBasicBlock::iterator MI,
                              DebugLoc DL) {
-  const TargetInstrInfo* TII = MBB.getParent()->getTarget().getInstrInfo();
+  const TargetInstrInfo* TII = MBB.getParent()->getSubtarget().getInstrInfo();
   MCSymbol *Label = MBB.getParent()->getContext().CreateTempSymbol();
   BuildMI(MBB, MI, DL, TII->get(TargetOpcode::GC_LABEL)).addSym(Label);
   return Label;

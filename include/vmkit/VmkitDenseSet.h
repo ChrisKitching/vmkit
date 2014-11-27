@@ -15,6 +15,7 @@
 #ifndef VMKIT_DENSESET_H
 #define VMKIT_DENSESET_H
 
+#include <type_traits>
 #include "llvm/ADT/DenseMapInfo.h"
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/PointerLikeTypeTraits.h"
@@ -432,7 +433,7 @@ class VmkitDenseSetIterator {
   friend class VmkitDenseSetIterator<ValueT, ValueInfoT, true>;
 public:
   typedef ptrdiff_t difference_type;
-  typedef typename llvm::conditional<IsConst, const Bucket, Bucket>::type value_type;
+  typedef typename std::conditional<IsConst, const Bucket, Bucket>::type value_type;
   typedef value_type *pointer;
   typedef value_type &reference;
   typedef std::forward_iterator_tag iterator_category;

@@ -22,11 +22,12 @@
 #include "llvm/MC/MCExpr.h"
 #include "llvm/MC/MCSymbol.h"
 #include "llvm/MC/MCStreamer.h"
-#include "llvm/Target/Mangler.h"
+#include "llvm/IR/Mangler.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/Target/TargetInstrInfo.h"
 #include "llvm/Target/TargetLoweringObjectFile.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/Target/TargetSubtargetInfo.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -57,7 +58,7 @@ VmkitAOTGC::VmkitAOTGC() {
 static MCSymbol *InsertLabel(MachineBasicBlock &MBB, 
                              MachineBasicBlock::iterator MI,
                              DebugLoc DL) {
-  const TargetInstrInfo* TII = MBB.getParent()->getTarget().getInstrInfo();
+  const TargetInstrInfo* TII = MBB.getParent()->getSubtarget().getInstrInfo();
   MCSymbol *Label = MBB.getParent()->getContext().CreateTempSymbol();
   BuildMI(MBB, MI, DL, TII->get(TargetOpcode::GC_LABEL)).addSym(Label);
   return Label;
@@ -218,7 +219,7 @@ Constant* FindMetadata(const Function& F) {
               if (STy->getName().equals("JavaMethod")) {
                 const Constant* Method = dyn_cast<Constant>(*CI);
                 const Constant* Array = dyn_cast<Constant>(*((*CI)->use_begin()));
-                Constant* VirtualMethods = dyn_cast<Constant>(const_cast<User*>((*(Array->use_begin()))));
+                Constant* VirtualMethods = dyn_cast<Constant>(const_cast<User*>((Array->use_begin())->getUser()));
                 uint32_t index = 0;
                 for (; index < Array->getNumOperands(); index++) {
                   if (Array->getOperand(index) == Method) break;
@@ -289,7 +290,7 @@ Constant* FindMetadata(const Function& F) {
 /// either condition is detected in a function which uses the GC.
 ///
 void VmkitAOTGCMetadataPrinter::finishAssembly(AsmPrinter &AP) {
-  unsigned IntPtrSize = AP.TM.getDataLayout()->getPointerSize(0);
+  unsigned IntPtrSize = AP.getDataLayout().getPointerSize(0);
 
   AP.OutStreamer.SwitchSection(AP.getObjFileLowering().getDataSection());
 
@@ -360,7 +361,7 @@ void VmkitAOTGCMetadataPrinter::finishAssembly(AsmPrinter &AP) {
         address = MCBinaryExpr::CreateAdd(address, one, AP.OutStreamer.getContext());
       }
 
-      AP.OutStreamer.EmitValue(address, IntPtrSize, 0);
+      AP.OutStreamer.EmitValue(address, IntPtrSize);
       AP.EmitInt16(sourceIndex);
       AP.EmitInt16(FrameSize);
       AP.EmitInt16(LiveCount);

@@ -21,7 +21,6 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/AsmParser/Parser.h>
 #include <llvm/CodeGen/GCStrategy.h>
-#include <llvm/CodeGen/JITCodeEmitter.h>
 #include <llvm/Config/config.h>
 #include <llvm/ExecutionEngine/ExecutionEngine.h>
 #include "llvm/ExecutionEngine/JITEventListener.h"
@@ -29,13 +28,13 @@
 #include <llvm/Support/Debug.h>
 #include <llvm/IRReader/IRReader.h>
 #include <llvm/Support/MutexGuard.h>
-#include <llvm/Support/PassNameParser.h>
+#include <llvm/IR/LegacyPassNameParser.h>
 #include <llvm/Support/SourceMgr.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/IR/DataLayout.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
-#include <lib/ExecutionEngine/JIT/JIT.h>
+//#include <lib/ExecutionEngine/JIT/JIT.h>
 
 #include "vmkit/JIT.h"
 #include "vmkit/Locks.h"
@@ -83,8 +82,7 @@ static llvm::cl::list<const llvm::PassInfo*, bool, llvm::PassNameParser>
 PassList(llvm::cl::desc("Optimizations available:"));
 
 void VmkitModule::initialise(int argc, char** argv) {
-  linkVmkitGC(); 
-  llvm_start_multithreaded();
+  linkVmkitGC();
 
   // Initialize passes
   PassRegistry &Registry = *PassRegistry::getPassRegistry();
@@ -98,8 +96,6 @@ void VmkitModule::initialise(int argc, char** argv) {
   initializeInstrumentation(Registry);
   initializeTarget(Registry);
   InitializeNativeTarget(); 
-  
-  DisablePrettyStackTrace = true;
 
   ThreadAllocator allocator;
   static const char* kPrefix = "-X:llvm:";
@@ -144,7 +140,7 @@ void VmkitModule::initialise(int argc, char** argv) {
 
 
 void VmkitModule::runPasses(llvm::Function* func,
-                          llvm::FunctionPassManager* pm) {
+                          FunctionPassManager* pm) {
   pm->run(*func);
 }
 
@@ -269,7 +265,7 @@ void BaseIntrinsics::init(llvm::Module* module) {
   ptrType = PointerType::getUnqual(Type::getInt8Ty(Context));
   ptr32Type = PointerType::getUnqual(Type::getInt32Ty(Context));
   ptrPtrType = PointerType::getUnqual(ptrType);
-  pointerSizeType = module->getPointerSize() == Module::Pointer32 ?
+  pointerSizeType = module->getDataLayout()->getPointerSize(0) == 4 ?
     Type::getInt32Ty(Context) : Type::getInt64Ty(Context);
 
   UTF8SizeType = Type::getInt32Ty(Context);
@@ -412,7 +408,7 @@ Frames* VmkitModule::addToVM(VirtualMachine* VM, GCFunctionInfo* FI, JIT* jit, B
     frame->Metadata = meta;
     frame->SourceIndex = I->Loc.getLine();
     frame->ReturnAddress = JCE->getLabelAddress(I->Label);
-    // If the safe point is fro an NPE, increment the return address to
+    // If the safe point is from an NPE, increment the return address to
     // not clash with post calls.
     if (I->Loc.getCol() == 1) frame->ReturnAddress += 1;
     int i = 0;

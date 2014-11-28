@@ -22,12 +22,15 @@
 #include "vmkit/GC.h"
 
 namespace llvm {
+  // TODO: Refactor the JIT to no longer depend on legacy code.
+  namespace legacy {
+    class FunctionPassManager;
+  }
   class Constant;
   class ConstantFP;
   class ConstantInt;
   class ExecutionEngine;
   class Function;
-  class FunctionPassManager;
   class GCFunctionInfo;
   class GCStrategy;
   class JIT;
@@ -174,7 +177,7 @@ class VmkitModule {
 public:
    static vmkit::LockRecursive protectEngine;
 
-   static void runPasses(llvm::Function* func, llvm::FunctionPassManager*);
+   static void runPasses(llvm::Function* func, llvm::legacy::FunctionPassManager*);
    static void initialise(int argc, char** argv);
 
    static Frames* addToVM(VirtualMachine* VM,
@@ -188,7 +191,7 @@ public:
    static void protectIR();
    static void unprotectIR();
 
-   static void addCommandLinePasses(llvm::FunctionPassManager* PM);
+   static void addCommandLinePasses(llvm::legacy::FunctionPassManager* PM);
 
    static const char* getHostTriple();
 };
